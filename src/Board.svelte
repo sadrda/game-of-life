@@ -1,16 +1,72 @@
 <script lang="ts">
+  import { playing } from "./store";
+
   const BOARD_SIZE = 20;
 
-  let board = Array(BOARD_SIZE);
-  for (let i = 0; i < board.length; i++) {
-    board[i] = Array(BOARD_SIZE);
-  }
-
+  let board = getEmptyBoard();
   for (let i = 0; i < board.length; i++) {
     for (let j = 0; j < board[i].length; j++) {
       board[i][j] = Math.random() > 0.5;
     }
   }
+  function getEmptyBoard() {
+    let board = Array(BOARD_SIZE);
+    for (let i = 0; i < board.length; i++) {
+      board[i] = Array(BOARD_SIZE);
+    }
+    return board;
+  }
+
+  function countNeighbouringCells(
+    board: boolean[][],
+    y: number,
+    x: number
+  ): number {
+    let count = 0;
+    if (board[y - 1] && board[y - 1][x - 1]) count++;
+    if (board[y - 1] && board[y - 1][x]) count++;
+    if (board[y - 1] && board[y - 1][x + 1]) count++;
+
+    if (board[y] && board[y][x - 1]) count++;
+    if (board[y] && board[y][x + 1]) count++;
+
+    if (board[y + 1] && board[y + 1][x - 1]) count++;
+    if (board[y + 1] && board[y + 1][x]) count++;
+    if (board[y + 1] && board[y + 1][x + 1]) count++;
+
+    return count;
+  }
+
+  function shouldReproduce(
+    cellStatus: boolean,
+    neighbouringCells: number
+  ): boolean {
+    let newCell = false; // dead by default
+    if (cellStatus) {
+      if (neighbouringCells === 2 || neighbouringCells === 3) newCell = true;
+    } else {
+      if (neighbouringCells === 3) newCell = true;
+    }
+    return newCell;
+  }
+
+  function getNextGenBoard(board: boolean[][]): boolean[][] {
+    const nextBoard = getEmptyBoard();
+
+    for (let y = 0; y < board.length; y++) {
+      for (let x = 0; x < board[y].length; x++) {
+        const neighbouringCells = countNeighbouringCells(board, y, x);
+        nextBoard[y][x] = shouldReproduce(board[y][x], neighbouringCells);
+      }
+    }
+    return nextBoard;
+  }
+
+  setInterval(() => {
+    if ($playing) {
+      board = getNextGenBoard(board);
+    }
+  }, 1000);
 </script>
 
 <div id="board-container">
