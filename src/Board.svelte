@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { animationSpeed, playing, boardSize } from "./store";
+  import { animationSpeed, playing, boardSize, aliveCount } from "./store";
 
   let board = getRandomizedBoard();
   let intervalId = -1;
@@ -67,14 +67,27 @@
     return nextBoard;
   }
 
+  function countAliveCells(board: boolean[][]): number {
+    let count = 0;
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell) count++;
+      }
+    }
+    return count;
+  }
+
   boardSize.subscribe(() => (board = getRandomizedBoard()));
-  $: {
+  animationSpeed.subscribe(() => {
     clearInterval(intervalId);
     intervalId = window.setInterval(() => {
       if ($playing) {
         board = getNextGenBoard(board);
       }
     }, 1000 / $animationSpeed);
+  });
+  $: {
+    aliveCount.set(countAliveCells(board));
   }
 </script>
 
