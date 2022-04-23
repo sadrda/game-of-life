@@ -3,7 +3,14 @@
   import type { BladeController, View } from "@tweakpane/core";
 
   import Board from "./Board.svelte";
-  import { playing, animationSpeed, boardSize, aliveCount } from "./store";
+  import {
+    playing,
+    animationSpeed,
+    boardSize,
+    aliveCount,
+    boardShouldClear,
+    boardShouldFill,
+  } from "./store";
 
   let aliveCountMonitor: BladeApi<BladeController<View>>;
 
@@ -27,6 +34,16 @@
     step: 1,
   });
 
+  const fillAllButton = pane.addButton({
+    title: "Fill All",
+  });
+  fillAllButton.on("click", () => ($boardShouldFill = true));
+
+  const clearAllButton = pane.addButton({
+    title: "Clear All",
+  });
+  clearAllButton.on("click", () => ($boardShouldClear = true));
+
   playingInput.on("change", (ev) => playing.set(ev.value));
   animationSpeedInput.on("change", (ev) => animationSpeed.set(ev.value));
   boardSizeInput.on("change", (ev) => boardSize.set(ev.value));
@@ -48,6 +65,24 @@
 
 <main>
   <Board />
+  <ol id="rules">
+    <li>
+      Any live cell with fewer than two live neighbours dies, as if by
+      underpopulation.
+    </li>
+    <li>
+      Any live cell with two or three live neighbours lives on to the next
+      generation.
+    </li>
+    <li>
+      Any live cell with more than three live neighbours dies, as if by
+      overpopulation.
+    </li>
+    <li>
+      Any dead cell with exactly three live neighbours becomes a live cell, as
+      if by reproduction.
+    </li>
+  </ol>
 </main>
 
 <style>
@@ -63,5 +98,17 @@
   main {
     display: flex;
     gap: 1em;
+  }
+
+  #rules {
+    color: bisque;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    width: 400px;
+  }
+
+  #rules > li {
+    font-size: 14px;
+    margin-top: 10px;
   }
 </style>

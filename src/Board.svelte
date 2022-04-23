@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { animationSpeed, playing, boardSize, aliveCount } from "./store";
+  import {
+    animationSpeed,
+    playing,
+    boardSize,
+    aliveCount,
+    boardShouldClear,
+    boardShouldFill,
+  } from "./store";
 
   let board = getRandomizedBoard();
   let intervalId = -1;
@@ -77,6 +84,23 @@
     return count;
   }
 
+  boardShouldClear.subscribe(() => {
+    if (!boardShouldClear) return;
+    board = getEmptyBoard();
+    $boardShouldClear = false;
+  });
+
+  boardShouldFill.subscribe(() => {
+    if (!boardShouldFill) return;
+    const newBoard = getEmptyBoard();
+    for (let y = 0; y < board.length; y++) {
+      for (let x = 0; x < board[y].length; x++) {
+        newBoard[y][x] = true;
+      }
+    }
+    board = newBoard;
+    $boardShouldFill = false;
+  });
   boardSize.subscribe(() => (board = getRandomizedBoard()));
   animationSpeed.subscribe(() => {
     clearInterval(intervalId);
@@ -86,6 +110,7 @@
       }
     }, 1000 / $animationSpeed);
   });
+
   $: {
     aliveCount.set(countAliveCells(board));
   }
